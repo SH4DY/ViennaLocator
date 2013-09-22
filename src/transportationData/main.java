@@ -38,6 +38,7 @@ public class main {
 		Gson gson = new Gson();
 		JsonParser jsonParser = new JsonParser();
 		
+		
 		int i = 0;
 		JsonArray jsonArray = jsonParser.parse(jsonText).getAsJsonObject()
 				.getAsJsonArray("features");
