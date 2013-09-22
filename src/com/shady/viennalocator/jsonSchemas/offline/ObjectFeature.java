@@ -1,4 +1,4 @@
-package jsonSchemas.realtime;
+package com.shady.viennalocator.jsonSchemas.offline;
 
 import java.util.HashSet;
 import java.util.Set;

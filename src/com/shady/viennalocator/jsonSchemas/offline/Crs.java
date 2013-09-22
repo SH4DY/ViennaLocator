@@ -1,4 +1,4 @@
-package jsonSchemas.realtime;
+package com.shady.viennalocator.jsonSchemas.offline;
 
 public class Crs {
 
