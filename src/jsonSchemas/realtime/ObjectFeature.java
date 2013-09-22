@@ -1,4 +1,4 @@
-package jsonSchemas;
+package jsonSchemas.realtime;
 
 import java.util.HashSet;
 import java.util.Set;

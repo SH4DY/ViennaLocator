@@ -1,4 +1,4 @@
-package jsonSchemas;
+package jsonSchemas.realtime;
 
 public class Feature {
 

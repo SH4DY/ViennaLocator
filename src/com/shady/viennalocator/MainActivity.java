@@ -1,8 +1,10 @@
-package com.example.viennalocator;
+package com.shady.viennalocator;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
+import com.example.viennalocator.R;
 
 import android.os.Bundle;
 import android.app.Activity;
