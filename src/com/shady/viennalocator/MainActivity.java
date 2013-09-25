@@ -12,12 +12,17 @@ import android.view.Menu;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.shady.viennalocator.jsonSchemas.offline.Feature;
+import com.shady.viennalocator.jsonSchemas.offline.Geometry;
 import com.shady.viennalocator.jsonSchemas.offline.ObjectFeature;
 import com.shady.viennalocator.transportationData.TransportationDataManager;
 
@@ -76,8 +81,34 @@ public class MainActivity extends FragmentActivity {
 		// Map---------------
 		setUpMapIfNeeded();
 
+		//END Map stuff--------
+		//Transportation Data initialization -----------
 		transManager = TransportationDataManager
 				.getInstance();
+		
+		//Button
+		Button loadButton  = (Button) findViewById(R.id.button1);
+		loadButton.setOnClickListener(new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				ObjectFeature objFeat = transManager.getOfflineDataJSON();
+				markStopsOnMap(objFeat);
+			}
+		});
+	}
+
+	//Extract geometry data from every feature (=stop) and put a marker on the map
+	protected void markStopsOnMap(ObjectFeature objFeat) {
+		for(Feature feature : objFeat.getFeatures() ){
+			Double lat = (double) feature.getGeometry().getCoordinates()[1];
+			Double lng = (double) feature.getGeometry().getCoordinates()[0];
+			
+			LatLng position = new LatLng(lat, lng);
+			_map.addMarker(new MarkerOptions().position(position)
+					.snippet(feature.getProperties().getHLINIEN())
+					.title(feature.getProperties().getHTXTK()));
+		}
 	}
 
 	@Override
@@ -109,7 +140,6 @@ public class MainActivity extends FragmentActivity {
 			@Override
 			public boolean onMarkerClick(Marker marker) {
 				marker.getPosition();
-
 				return false;
 			}
 		});

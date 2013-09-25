@@ -16,7 +16,17 @@
             android:id="@+id/map"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            class="com.google.android.gms.maps.SupportMapFragment" />
+            class="com.google.android.gms.maps.SupportMapFragment">
+            
+            <Button
+            android:id="@+id/button1"
+            android:text="Load"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        </fragment>
+
+
+
     </LinearLayout>
     <!-- The navigation drawer -->
 

@@ -18,9 +18,13 @@ import com.shady.viennalocator.jsonSchemas.offline.ObjectFeature;
 public class TransportationDataManager {
 	private static TransportationDataManager instance;
 
-	private TaskRetrieveOfflineJSON _offlineDataTask;
+	private TaskRetrieveRealtimeJSON _realtimeDataTask;
 
 	private String _offlineDataJSON;
+
+	private TaskRetrieveOfflineJSON _offlineDataTask;
+
+	public String _realtimeDataJSON;
 
 	public static TransportationDataManager getInstance() {
 		if (instance == null) {
@@ -30,34 +34,68 @@ public class TransportationDataManager {
 	}
 
 	private TransportationDataManager() {
+		_realtimeDataTask = new TaskRetrieveRealtimeJSON();
+		_realtimeDataTask.execute("");
+
 		_offlineDataTask = new TaskRetrieveOfflineJSON();
 		_offlineDataTask.execute("");
 	}
 
+	//TODO Die beiden Methoden machen wenig Sinn....
 	public ObjectFeature getOfflineDataJSON() {
-		
-		if(_offlineDataJSON != ""){
-			parseOfflineDataJSON();
-		}
 		return parseOfflineDataJSON();
 	}
 
-	private ObjectFeature parseOfflineDataJSON(){
-		Gson gson  = new Gson();
-		ObjectFeature obj = gson.fromJson(_offlineDataJSON, ObjectFeature.class);
+	private ObjectFeature parseOfflineDataJSON() {
+		Gson gson = new Gson();
+		ObjectFeature obj = gson
+				.fromJson(_offlineDataJSON, ObjectFeature.class);
+
 		return obj;
 	}
+
 	private class TaskRetrieveOfflineJSON extends
 			AsyncTask<String, Void, String> {
 		@Override
 		protected String doInBackground(String... urls) {
-//			String responseEntity = ClientBuilder.newClient()
-//					.target("http://www.wienerlinien.at")
-//					.path("/ogd_realtime/monitor?rbl=147&sender=t7YjOZBcqw")
-//					.request(MediaType.APPLICATION_JSON)
-//					.header("Content-type", "application/json")
-//					.get(String.class);
-//			return responseEntity;
+			String result = null;
+			HttpClient httpclient = new DefaultHttpClient();
+			HttpGet request = new HttpGet(
+					"http://data.wien.gv.at/daten/wfs?service=WFS&request=GetFeature&version=1.1.0&typeName=ogdwien:OEFFHALTESTOGD&srsName=EPSG:4326&outputFormat=json");
+			// request.addHeader("Content-type", "application/json");
+			// request.addHeader("Accept", "application/json");
+			ResponseHandler<String> handler = new BasicResponseHandler();
+			try {
+				result = httpclient.execute(request, handler);
+			} catch (ClientProtocolException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			httpclient.getConnectionManager().shutdown();
+			return result;
+
+		}
+
+		@Override
+		protected void onPostExecute(String result) {
+			_offlineDataJSON = result;
+			Log.d("Shady", "Result of the HTTP GET OFFLINE DATA" + result);
+		}
+	}
+
+	// TODO Eingabeparameter in INT???
+	private class TaskRetrieveRealtimeJSON extends
+			AsyncTask<String, Void, String> {
+		@Override
+		protected String doInBackground(String... urls) {
+			// String responseEntity = ClientBuilder.newClient()
+			// .target("http://www.wienerlinien.at")
+			// .path("/ogd_realtime/monitor?rbl=147&sender=t7YjOZBcqw")
+			// .request(MediaType.APPLICATION_JSON)
+			// .header("Content-type", "application/json")
+			// .get(String.class);
+			// return responseEntity;
 
 			String result = null;
 			HttpClient httpclient = new DefaultHttpClient();
@@ -80,8 +118,9 @@ public class TransportationDataManager {
 
 		@Override
 		protected void onPostExecute(String result) {
-			_offlineDataJSON = result;
-			Log.d("Shady", "Result of the HTTP GET " + result);
+			_realtimeDataJSON = result;
+			Log.d("Shady", "Result of HTTP GET REALTIME DATA " + result);
 		}
 	}
+
 }
