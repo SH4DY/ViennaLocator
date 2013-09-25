@@ -9,10 +9,13 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.DefaultHttpClient;
 
+import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
+import com.shady.viennalocator.jsonSchemas.offline.Feature;
 import com.shady.viennalocator.jsonSchemas.offline.ObjectFeature;
 
 public class TransportationDataManager {
@@ -26,10 +29,17 @@ public class TransportationDataManager {
 
 	public String _realtimeDataJSON;
 
-	public static TransportationDataManager getInstance() {
+	private ObjectFeature _obj;
+	
+	private static Context _context;
+
+	private static final String REGEX_TRAM = "(.*,[0-9][a-zA-Z].*|.*[0-9][0-9][a-zA-Z].*|.*[0-9][0-9][0-9][a-zA-Z].*)";
+	
+	public static TransportationDataManager getInstance(Context context) {
 		if (instance == null) {
 			instance = new TransportationDataManager();
 		}
+		_context = context;
 		return instance;
 	}
 
@@ -41,20 +51,41 @@ public class TransportationDataManager {
 		_offlineDataTask.execute("");
 	}
 
-	//TODO Die beiden Methoden machen wenig Sinn....
+	// TODO Die beiden Methoden machen wenig Sinn....
 	public ObjectFeature getOfflineDataJSON() {
 		return parseOfflineDataJSON();
 	}
 
 	private ObjectFeature parseOfflineDataJSON() {
 		Gson gson = new Gson();
-		ObjectFeature obj = gson
-				.fromJson(_offlineDataJSON, ObjectFeature.class);
-
-		return obj;
+		_obj = gson.fromJson(_offlineDataJSON, ObjectFeature.class);
+		categorizeObjectFeature();
+		return _obj;
 	}
 
-	private class TaskRetrieveOfflineJSON extends
+	//Is called everytime offlineData is parsed
+	private void categorizeObjectFeature(){
+		if(_obj == null){
+			Toast.makeText(_context, "JSON Data not ready", Toast.LENGTH_LONG).show();
+			return;
+		}
+		for(Feature feature : _obj.getFeatures()){
+			String lines = feature.getProperties().getHLINIEN();
+			if(lines.matches("(^|\\s)[Uu][0-9](,|$)")){
+				feature.setMetro(true);
+			}
+			if(lines.matches("(^|\\s)[0-9]{1,3}[a-zA-Z](,|$)")){
+				feature.setBus(true);
+			}
+			if(lines.matches("((^|\\s)[0-9]{1,2}(,|$))|((^|\\s)26E(,|$))")){
+				feature.setTram(true);
+			}
+			if(lines.matches("(^|\\s)N[0-9]{1,2}(,|$)")){
+				feature.setNightline(true);
+			}
+			
+		}
+	}	private class TaskRetrieveOfflineJSON extends
 			AsyncTask<String, Void, String> {
 		@Override
 		protected String doInBackground(String... urls) {

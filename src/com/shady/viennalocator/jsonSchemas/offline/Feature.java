@@ -7,6 +7,11 @@ public class Feature {
 	private Geometry geometry;
 	private String geometry_name;
 	
+	private boolean metro;
+	private boolean tram;
+	private boolean bus;
+	private boolean nightline;
+	
 	public String getType() {
 		return type;
 	}
@@ -38,6 +43,32 @@ public class Feature {
 		this.properties = properties;
 	}
 	private Properties properties;
+
+	public boolean isMetro() {
+		return metro;
+	}
+	public void setMetro(boolean metro) {
+		this.metro = metro;
+	}
+	public boolean isTram() {
+		return tram;
+	}
+	public void setTram(boolean tram) {
+		this.tram = tram;
+	}
+	public boolean isBus() {
+		return bus;
+	}
+	public void setBus(boolean bus) {
+		this.bus = bus;
+	}
+	public boolean isNightline() {
+		return nightline;
+	}
+	public void setNightline(boolean nightline) {
+		this.nightline = nightline;
+	}
+
 	
 
 }
