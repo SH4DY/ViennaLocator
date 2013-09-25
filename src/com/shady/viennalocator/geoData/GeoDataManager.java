@@ -1,6 +1,12 @@
 package com.shady.viennalocator.geoData;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import android.content.Context;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
@@ -34,24 +40,38 @@ public class GeoDataManager implements
 	private LocationRequest _locationRequest;
 	private Location _location;
 
-	private static GeoDataManager getInstance(Context context) {
-		if(_instance == null){
+	public static GeoDataManager getInstance(Context context) {
+		if (_instance == null) {
 			_context = context;
 			_instance = new GeoDataManager();
 		}
 		return _instance;
 	}
-	private GeoDataManager(){
+
+	private GeoDataManager() {
 		_locationClient = new LocationClient(_context, this, this);
 		_locationRequest = LocationRequest.create();
 		_locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 		_locationRequest.setInterval(UPDATE_INTERVAL);
 		_locationRequest.setFastestInterval(FASTEST_INTERVAL);
 	}
-	
-	public Location getLiveLocation(){
+
+	public Location getLiveLocation() {
 		return _location;
 	}
+
+	public Address getAddressFromLocation(Location location) {
+		Geocoder geo = new Geocoder(_context);
+		ArrayList<Address> addresses = null;
+		try {
+			addresses = (ArrayList<Address>)geo.getFromLocation(
+					location.getLatitude(), location.getLongitude(), 1);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return addresses.get(0);
+	}
+
 	@Override
 	public void onLocationChanged(Location location) {
 		_location = location;
@@ -64,7 +84,8 @@ public class GeoDataManager implements
 
 	@Override
 	public void onConnected(Bundle connectionHint) {
-		Toast.makeText(_context, "Play Services connected", Toast.LENGTH_SHORT).show();
+		Toast.makeText(_context, "Play Services connected", Toast.LENGTH_SHORT)
+				.show();
 		Log.d("Shady", "GeoDataManager connected");
 		_locationClient.requestLocationUpdates(_locationRequest, this);
 	}

@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 
 import android.content.Context;
+import android.location.Address;
+import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.util.SparseBooleanArray;
@@ -16,11 +18,13 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.shady.viennalocator.geoData.GeoDataManager;
 import com.shady.viennalocator.jsonSchemas.offline.Feature;
 import com.shady.viennalocator.jsonSchemas.offline.Geometry;
 import com.shady.viennalocator.jsonSchemas.offline.ObjectFeature;
@@ -30,6 +34,7 @@ public class MainActivity extends FragmentActivity {
 
 	private GoogleMap _map = null;
 	private TransportationDataManager transManager;
+	private GeoDataManager _geoManager;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -53,9 +58,9 @@ public class MainActivity extends FragmentActivity {
 			public void onItemClick(final AdapterView<?> parent,
 					final View view, final int position, final long id) {
 				final String item = (String) parent.getItemAtPosition(position);
-				
-				ObjectFeature objectFeature =  transManager.getOfflineDataJSON();
-				
+
+				ObjectFeature objectFeature = transManager.getOfflineDataJSON();
+
 				view.animate().setDuration(2000).alpha(0)
 						.withEndAction(new Runnable() {
 
@@ -81,15 +86,18 @@ public class MainActivity extends FragmentActivity {
 		// Map---------------
 		setUpMapIfNeeded();
 
-		//END Map stuff--------
-		//Transportation Data initialization -----------
-		transManager = TransportationDataManager
-				.getInstance();
-		
-		//Button
-		Button loadButton  = (Button) findViewById(R.id.button1);
+		// END Map stuff--------
+
+		_geoManager = GeoDataManager.getInstance(this);
+		// END GeoDataManager---------
+
+		// Transportation Data initialization -----------
+		transManager = TransportationDataManager.getInstance();
+
+		// Button
+		Button loadButton = (Button) findViewById(R.id.button1);
 		loadButton.setOnClickListener(new View.OnClickListener() {
-			
+
 			@Override
 			public void onClick(View v) {
 				ObjectFeature objFeat = transManager.getOfflineDataJSON();
@@ -98,12 +106,13 @@ public class MainActivity extends FragmentActivity {
 		});
 	}
 
-	//Extract geometry data from every feature (=stop) and put a marker on the map
+	// Extract geometry data from every feature (=stop) and put a marker on the
+	// map
 	protected void markStopsOnMap(ObjectFeature objFeat) {
-		for(Feature feature : objFeat.getFeatures() ){
+		for (Feature feature : objFeat.getFeatures()) {
 			Double lat = (double) feature.getGeometry().getCoordinates()[1];
 			Double lng = (double) feature.getGeometry().getCoordinates()[0];
-			
+
 			LatLng position = new LatLng(lat, lng);
 			_map.addMarker(new MarkerOptions().position(position)
 					.snippet(feature.getProperties().getHLINIEN())
@@ -139,7 +148,12 @@ public class MainActivity extends FragmentActivity {
 
 			@Override
 			public boolean onMarkerClick(Marker marker) {
-				marker.getPosition();
+				Location location = new Location("Shady");
+				location.setLongitude(marker.getPosition().longitude);
+				location.setLatitude(marker.getPosition().latitude);
+				Address address = _geoManager.getAddressFromLocation(location);
+				marker.setSnippet(marker.getSnippet() + "\n\n"
+						+ address.getAddressLine(0));
 				return false;
 			}
 		});
